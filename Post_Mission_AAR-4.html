@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Post-Mission After Action Review</title>
+<style>
+  :root {
+    --primary: #1F4E79;
+    --primary-dark: #163a5a;
+    --accent: #2E75B6;
+    --bg: #f4f6f8;
+    --card: #ffffff;
+    --border: #d0d7de;
+    --text: #1a1a1a;
+    --muted: #5c6b7a;
+    --success: #1e7e34;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 12px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 16px 12px;
+    text-align: center;
+    border-radius: 10px 10px 0 0;
+    margin: -12px -12px 16px -12px;
+  }
+  .header h1 { margin: 0; font-size: 1.35rem; font-weight: 700; }
+  .header p { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
+  .card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+  }
+  h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    color: var(--primary);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 12px 0 4px;
+    color: var(--primary-dark);
+  }
+  input[type="text"], input[type="date"], textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-family: inherit;
+  }
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .entry-set {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .entry-set .remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .btn {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+  }
+  .btn-secondary {
+    background: #6c757d;
+    margin-top: 8px;
+  }
+  .btn-success { background: var(--success); }
+  .note {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .success-msg {
+    background: #d4edda;
+    color: #155724;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    display: none;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 14px;
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 6px;
+    line-height: 1.5;
+    border: 1px solid var(--border);
+  }
+  @media (min-width: 600px) {
+    body { max-width: 640px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>POST-MISSION AAR</h1>
+  <p>After Action Review</p>
+</div>
+
+<form id="aarForm">
+  <div class="card">
+    <h2>1. Submitting Person / Unit</h2>
+    <label>Person or Unit</label>
+    <input type="text" name="submitter" required placeholder="Name, callsign, or unit">
+
+    <label>Ops/Mission Name</label>
+    <input type="text" name="missionName" required placeholder="Operation or mission name">
+
+    <label>Date</label>
+    <input type="date" name="missionDate" required>
+  </div>
+
+  <div class="card">
+    <h2>2. After Action Entries</h2>
+    <p class="note">Add as many Observation / Sustain / Improve sets as needed.</p>
+    <div id="entriesContainer"></div>
+    <button type="button" id="addEntryBtn" class="btn btn-secondary">+ Add Another Set</button>
+  </div>
+
+  <div class="card">
+    <button type="submit" class="btn btn-success">Submit to Signal</button>
+    <button type="button" id="resetBtn" class="btn btn-secondary">Reset / Clear Entries</button>
+    <p class="note">Submit prepares the AAR and opens the share menu so you can send it via Signal.</p>
+  </div>
+</form>
+
+<div id="success" class="success-msg">
+  <strong>AAR ready.</strong><br>
+  Use the buttons below to share or start a new one.
+</div>
+
+<div id="output" class="card" style="display:none;">
+  <h2>AAR Summary</h2>
+  <pre id="summary"></pre>
+  <button type="button" id="shareBtn" class="btn btn-success" style="margin-bottom:8px;">Share via Signal</button>
+  <button type="button" id="copyBtn" class="btn">Copy Summary</button>
+  <button type="button" id="newBtn" class="btn btn-secondary" style="margin-top:10px;">Reset / Clear & Start New</button>
+</div>
+
+<script>
+let entryCount = 0;
+
+function addEntrySet() {
+  entryCount++;
+  const container = document.getElementById('entriesContainer');
+  const div = document.createElement('div');
+  div.className = 'entry-set';
+  div.innerHTML = `
+    <button type="button" class="remove-btn">×</button>
+    <label>Observation</label>
+    <textarea name="observation_${entryCount}" placeholder="What happened? Key events, conditions, and facts observed..."></textarea>
+    <label>Sustain</label>
+    <textarea name="sustain_${entryCount}" placeholder="What went well and should be continued or repeated?"></textarea>
+    <label>Improve</label>
+    <textarea name="improve_${entryCount}" placeholder="What needs to be fixed, changed, or done differently next time?"></textarea>
+  `;
+  div.querySelector('.remove-btn').addEventListener('click', () => div.remove());
+  container.appendChild(div);
+}
+
+function resetForm() {
+  document.getElementById('aarForm').reset();
+  document.getElementById('entriesContainer').innerHTML = '';
+  entryCount = 0;
+  addEntrySet();
+  document.getElementById('success').style.display = 'none';
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('aarForm').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copySummary() {
+  const text = document.getElementById('summary').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('AAR summary copied.');
+    }).catch(() => {
+      alert('Could not copy automatically. Please select and copy the text.');
+    });
+  } else {
+    alert('Please select and copy the text manually.');
+  }
+}
+
+function shareToSignal() {
+  const text = document.getElementById('summary').textContent;
+  if (navigator.share) {
+    navigator.share({
+      title: 'Post-Mission AAR',
+      text: text
+    }).catch(() => copySummary());
+  } else {
+    copySummary();
+    alert('Share menu not available. Summary copied — paste it into Signal.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  addEntrySet();
+
+  document.getElementById('addEntryBtn').addEventListener('click', addEntrySet);
+  document.getElementById('resetBtn').addEventListener('click', resetForm);
+  document.getElementById('shareBtn').addEventListener('click', shareToSignal);
+  document.getElementById('copyBtn').addEventListener('click', copySummary);
+  document.getElementById('newBtn').addEventListener('click', resetForm);
+
+  document.getElementById('aarForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = new FormData(this);
+
+    let summary = "POST-MISSION AAR\n";
+    summary += "================\n\n";
+    summary += `Submitted by: ${data.get('submitter') || ''}\n`;
+    summary += `Ops/Mission: ${data.get('missionName') || ''}\n`;
+    summary += `Date: ${data.get('missionDate') || ''}\n\n`;
+
+    const sets = [];
+    for (let i = 1; i <= entryCount; i++) {
+      const obs = (data.get(`observation_${i}`) || '').trim();
+      const sus = (data.get(`sustain_${i}`) || '').trim();
+      const imp = (data.get(`improve_${i}`) || '').trim();
+      if (obs || sus || imp) {
+        sets.push({ obs, sus, imp });
+      }
+    }
+
+    if (sets.length === 0) {
+      summary += "No entries provided.\n";
+    } else {
+      sets.forEach((set, idx) => {
+        if (sets.length > 1) {
+          summary += `--- Entry ${idx + 1} ---\n\n`;
+        }
+        summary += `OBSERVATION\n${set.obs || 'None'}\n\n`;
+        summary += `SUSTAIN\n${set.sus || 'None'}\n\n`;
+        summary += `IMPROVE\n${set.imp || 'None'}\n\n`;
+      });
+    }
+
+    summary += `Generated: ${new Date().toLocaleString()}`;
+
+    document.getElementById('summary').textContent = summary;
+    document.getElementById('output').style.display = 'block';
+    document.getElementById('success').style.display = 'block';
+    document.getElementById('aarForm').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    setTimeout(shareToSignal, 400);
+  });
+});
+</script>
+
+</body>
+</html>
